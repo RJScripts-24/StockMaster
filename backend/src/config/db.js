@@ -1,5 +1,6 @@
 // src/config/db.js
-// Prisma client wrapper + connect/disconnect helpers for StockMaster backend
+
+// Prisma client wrapper + connect/disconnect helpers for StockMaster backend (MySQL)
 
 import { PrismaClient } from '@prisma/client';
 import config from './index.js';
@@ -7,7 +8,7 @@ import logger from '../server/logger.js';
 
 const prismaOptions = {};
 
-// Enable Prisma query logging if configured
+// Enable Prisma query logging if configured (works for MySQL too)
 if (config.db.prismaLog) {
   prismaOptions.log = [
     { emit: 'event', level: 'query' },
@@ -95,14 +96,14 @@ export async function runTransaction(fn, options = {}) {
       // If last attempt, rethrow
       const isLast = attempt === retries;
 
-      // Simple detection for transient DB errors (Postgres serialization/failure)
-      const transient =
-        err &&
-        (err.code === 'P2034' || // example Prisma-specific codes (varies)
-          err.code === '40001' || // Postgres serialization_failure
-          err.code === '57014' || // query_canceled
-          /deadlock detected/i.test(err.message || '') ||
-          /serialization/i.test(err.message || ''));
+      // Simple detection for transient DB errors (MySQL deadlocks, lock wait timeouts, etc.)
+            const transient =
+              err &&
+              (err.code === 'P2034' || // example Prisma-specific codes (varies)
+                err.code === '1213' || // MySQL deadlock
+                err.code === '1205' || // MySQL lock wait timeout
+                /deadlock detected/i.test(err.message || '') ||
+                /lock wait timeout/i.test(err.message || ''));
 
       logger.warn(
         `Transaction attempt ${attempt + 1} failed${transient ? ' (transient?)' : ''}: ${err.message}`

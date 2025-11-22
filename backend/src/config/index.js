@@ -26,7 +26,7 @@ const config = {
     version: '1.0.0',
   },
 
-  // Database (PostgreSQL)
+  // Database (MySQL)
   db: {
     url: required('DATABASE_URL'),
     prismaLog: process.env.PRISMA_LOG === 'true',

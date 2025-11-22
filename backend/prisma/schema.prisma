@@ -1,3 +1,20 @@
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  receiptsCreated      Receipt[]   @relation("UserReceiptsCreated")
+  deliveriesCreated    Delivery[]  @relation("UserDeliveriesCreated")
+  adjustmentsCreated   Adjustment[] @relation("UserAdjustmentsCreated")
+  receiptsValidated    Receipt[]   @relation("ReceiptValidatedBy")
+  deliveriesValidated  Delivery[]  @relation("DeliveryValidatedBy")
+  transfersCreated     Transfer[]  @relation("TransferCreatedBy")
+  transfersValidated   Transfer[]  @relation("TransferValidatedBy")
+  ledgersCreated      Ledger[]     @relation("LedgerCreatedBy")
+}
 // Prisma schema for StockMaster
 
 generator client {
@@ -5,8 +22,183 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-// Define your models here
+
+model Transfer {
+  id              Int      @id @default(autoincrement())
+  fromWarehouseId Int
+  toWarehouseId   Int
+  status          String   @default("draft")
+  createdById     Int?
+  validatedById   Int?
+  validatedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  items           TransferItem[]
+  fromWarehouse   Warehouse @relation("TransfersFromWarehouse", fields: [fromWarehouseId], references: [id])
+  toWarehouse     Warehouse @relation("TransfersToWarehouse", fields: [toWarehouseId], references: [id])
+  createdBy       User?    @relation("TransferCreatedBy", fields: [createdById], references: [id])
+  validatedBy     User?    @relation("TransferValidatedBy", fields: [validatedById], references: [id])
+}
+
+// ...existing code...
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  sku         String   @unique
+  description String?
+  unit        String?
+  categoryId  Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  inventory   Inventory[]
+  receiptItems ReceiptItem[]
+  deliveryItems DeliveryItem[]
+  adjustmentItems AdjustmentItem[]
+  transferItems TransferItem[]
+  ledger      Ledger[]
+  category    Category? @relation(fields: [categoryId], references: [id])
+}
+
+model Category {
+  id    Int      @id @default(autoincrement())
+  name  String   @unique
+  products Product[]
+}
+
+model Warehouse {
+  id          Int      @id @default(autoincrement())
+  name        String
+  code        String   @unique
+  location    String?
+  description String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  inventory   Inventory[]
+  receipts    Receipt[]
+  deliveries  Delivery[]
+    adjustments Adjustment[]
+    ledgers     Ledger[]
+    transfersFrom Transfer[] @relation("TransfersFromWarehouse")
+    transfersTo   Transfer[] @relation("TransfersToWarehouse")
+}
+
+model Inventory {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  warehouseId Int
+  quantity    Int      @default(0)
+  product     Product  @relation(fields: [productId], references: [id])
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  @@unique([productId, warehouseId])
+}
+
+model Receipt {
+  id           Int      @id @default(autoincrement())
+  referenceNo  String?
+  supplierName String
+  warehouseId  Int
+  status       String   @default("pending")
+  createdById  Int?
+  validatedById Int?
+  validatedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  items        ReceiptItem[]
+  warehouse    Warehouse @relation(fields: [warehouseId], references: [id])
+  createdBy    User?    @relation("UserReceiptsCreated", fields: [createdById], references: [id])
+  validatedBy  User?    @relation("ReceiptValidatedBy", fields: [validatedById], references: [id])
+}
+
+model ReceiptItem {
+  id         Int     @id @default(autoincrement())
+  receiptId  Int
+  productId  Int
+  quantity   Int
+  unitPrice  Float?
+  receipt    Receipt @relation(fields: [receiptId], references: [id])
+  product    Product @relation(fields: [productId], references: [id])
+}
+
+model Delivery {
+  id           Int      @id @default(autoincrement())
+  referenceNo  String?
+  customerName String
+  warehouseId  Int
+  status       String   @default("pending")
+  createdById  Int?
+  validatedById Int?
+  validatedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  items        DeliveryItem[]
+  warehouse    Warehouse @relation(fields: [warehouseId], references: [id])
+  createdBy    User?    @relation("UserDeliveriesCreated", fields: [createdById], references: [id])
+  validatedBy  User?    @relation("DeliveryValidatedBy", fields: [validatedById], references: [id])
+}
+
+model DeliveryItem {
+  id         Int     @id @default(autoincrement())
+  deliveryId Int
+  productId  Int
+  quantity   Int
+  delivery   Delivery @relation(fields: [deliveryId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+model Adjustment {
+  id           Int      @id @default(autoincrement())
+  warehouseId  Int
+  status       String   @default("DRAFT")
+  reason       String?
+  notes        String?
+  createdBy    Int?
+  appliedBy    Int?
+  appliedAt    DateTime?
+  canceledBy   Int?
+  canceledAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  items        AdjustmentItem[]
+  warehouse    Warehouse @relation(fields: [warehouseId], references: [id])
+  user         User?    @relation("UserAdjustmentsCreated", fields: [createdBy], references: [id])
+}
+
+model AdjustmentItem {
+  id            Int        @id @default(autoincrement())
+  adjustmentId  Int
+  productId     Int
+  countedQuantity Int
+  note          String?
+  adjustment    Adjustment @relation(fields: [adjustmentId], references: [id])
+  product       Product    @relation(fields: [productId], references: [id])
+}
+
+
+model TransferItem {
+  id         Int      @id @default(autoincrement())
+  transferId Int      // Added transferId to support @relation fields
+  productId  Int
+  quantity   Int
+  transfer   Transfer @relation(fields: [transferId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+model Ledger {
+  id           Int      @id @default(autoincrement())
+  productId    Int
+  warehouseId  Int?
+  change       Int
+  reason       String?
+  referenceType String?
+  referenceId  Int?
+  createdById  Int?
+  createdAt    DateTime @default(now())
+  product      Product  @relation(fields: [productId], references: [id])
+  warehouse    Warehouse? @relation(fields: [warehouseId], references: [id])
+  createdBy    User?    @relation("LedgerCreatedBy", fields: [createdById], references: [id])
+}
