@@ -138,10 +138,139 @@ async function getRecentMovements(req, res, next) {
   }
 }
 
+/**
+ * GET /api/dashboard/stats
+ * Returns dashboard statistics matching frontend DashboardStats interface
+ * Expected format: { totalProducts, totalWarehouses, totalLocations, lowStockProducts, recentReceipts, recentDeliveries, recentTransfers }
+ */
+async function getStats(req, res, next) {
+  try {
+    const { prisma } = require('../../config/db');
+    
+    // Count total products
+    const totalProducts = await prisma.product.count();
+    
+    // Count total warehouses
+    const totalWarehouses = await prisma.warehouse.count();
+    
+    // Count total inventory locations (unique product-warehouse combinations)
+    const totalLocations = await prisma.inventory.count();
+    
+    // Count low stock products (inventory with quantity <= 10)
+    const lowStockProducts = await prisma.inventory.count({
+      where: {
+        quantity: {
+          lte: 10
+        }
+      }
+    });
+    
+    // Count recent receipts (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentReceipts = await prisma.receipt.count({
+      where: {
+        createdAt: {
+          gte: sevenDaysAgo
+        }
+      }
+    });
+    
+    // Count recent deliveries (last 7 days)
+    const recentDeliveries = await prisma.delivery.count({
+      where: {
+        createdAt: {
+          gte: sevenDaysAgo
+        }
+      }
+    });
+    
+    // Count recent transfers (last 7 days)
+    const recentTransfers = await prisma.transfer.count({
+      where: {
+        createdAt: {
+          gte: sevenDaysAgo
+        }
+      }
+    });
+    
+    const stats = {
+      totalProducts,
+      totalWarehouses,
+      totalLocations,
+      lowStockProducts,
+      recentReceipts,
+      recentDeliveries,
+      recentTransfers
+    };
+    
+    return res.status(200).json(stats);
+  } catch (err) {
+    return sendError(next, err);
+  }
+}
+
+/**
+ * GET /api/dashboard/stock-levels
+ * Returns current stock levels across all locations
+ */
+async function getStockLevels(req, res, next) {
+  try {
+    const { prisma } = require('../../config/db');
+    
+    const stockLevels = await prisma.inventory.findMany({
+      include: {
+        product: true,
+        warehouse: true
+      },
+      orderBy: {
+        quantity: 'desc'
+      }
+    });
+    
+    return res.status(200).json(stockLevels);
+  } catch (err) {
+    return sendError(next, err);
+  }
+}
+
+/**
+ * GET /api/dashboard/low-stock
+ * Returns products with low stock levels (below reorder point)
+ */
+async function getLowStock(req, res, next) {
+  try {
+    const { prisma } = require('../../config/db');
+    
+    // Get all inventory with low stock (quantity <= 10)
+    const lowStock = await prisma.inventory.findMany({
+      where: {
+        quantity: {
+          lte: 10
+        }
+      },
+      include: {
+        product: true,
+        warehouse: true
+      },
+      orderBy: {
+        quantity: 'asc'
+      }
+    });
+    
+    return res.status(200).json(lowStock);
+  } catch (err) {
+    return sendError(next, err);
+  }
+}
+
 // Routes
 router.get('/', getDashboardSnapshot);
 router.get('/kpis', getKPIs);
 router.get('/stock-history', getStockHistory);
 router.get('/recent-movements', getRecentMovements);
+router.get('/stats', getStats);
+router.get('/stock-levels', getStockLevels);
+router.get('/low-stock', getLowStock);
 
 module.exports = router;

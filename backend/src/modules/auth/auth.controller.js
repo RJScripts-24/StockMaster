@@ -26,8 +26,15 @@ export async function signup(req, res, next) {
     }
     const user = await AuthService.signup(payload);
     const { password, ...safeUser } = user;
+    
+    // Generate token for the newly created user
+    const token = await AuthService.generateTokenForUser(safeUser);
+    
     logger.info(`User signed up: ${safeUser.email}`);
-    return success(res, { data: { user: safeUser } }, 201);
+    return res.status(201).json({
+      user: safeUser,
+      token
+    });
   } catch (err) {
     logger.error('Signup failed', err);
     return next(err);
@@ -37,7 +44,7 @@ export async function signup(req, res, next) {
 /**
  * POST /api/auth/login
  * Body: { email, password }
- * Returns: { user, accessToken, refreshToken }
+ * Returns: { user, token }
  */
 export async function login(req, res, next) {
   try {
@@ -50,7 +57,12 @@ export async function login(req, res, next) {
       throw new AppError('Invalid credentials', 401);
     }
     logger.info(`User logged in: ${email}`);
-    return success(res, { data: result }, 200);
+    // Return token instead of accessToken to match frontend expectations
+    return res.status(200).json({
+      user: result.user,
+      token: result.accessToken,
+      refreshToken: result.refreshToken
+    });
   } catch (err) {
     logger.error('Login error', err);
     return next(err);
@@ -164,6 +176,25 @@ export async function resetPassword(req, res, next) {
     return success(res, { message: 'Password reset successful' }, 200);
   } catch (err) {
     logger.error('Reset password failed', err);
+    return next(err);
+  }
+}
+
+/**
+ * GET /api/auth/me
+ * Returns current authenticated user
+ * Requires authentication middleware
+ */
+export async function getCurrentUser(req, res, next) {
+  try {
+    if (!req.user) {
+      throw new AppError('User not authenticated', 401);
+    }
+    // req.user is attached by authMiddleware
+    const { password, ...safeUser } = req.user;
+    return res.status(200).json(safeUser);
+  } catch (err) {
+    logger.error('Get current user failed', err);
     return next(err);
   }
 }

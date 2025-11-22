@@ -14,7 +14,7 @@ const WarehouseService = {
    * Returns created warehouse (safe fields).
    */
   async createWarehouse(payload = {}) {
-    const { name, code, location, description, metadata } = payload;
+    const { name, code, location, description, metadata, createdBy } = payload;
 
     if (!name) throw new AppError('Warehouse name is required', 400);
     if (!code) throw new AppError('Warehouse code is required', 400);
@@ -33,6 +33,7 @@ const WarehouseService = {
           location: location || null,
           description: description || null,
           metadata: metadata || null, // assumes JSON field or string, depending on schema
+          createdBy: createdBy || null,
         },
         select: {
           id: true,
@@ -41,6 +42,7 @@ const WarehouseService = {
           location: true,
           description: true,
           metadata: true,
+          createdBy: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -56,7 +58,7 @@ const WarehouseService = {
 
   /**
    * Get paginated warehouses.
-   * options: { page = 1, perPage = 20, search }
+   * options: { page = 1, perPage = 20, search, userId }
    * Returns { meta, data }
    */
   async getAllWarehouses(options = {}) {
@@ -65,6 +67,12 @@ const WarehouseService = {
     const skip = (page - 1) * perPage;
 
     const where = {};
+    
+    // Filter by userId if provided
+    if (options.userId) {
+      where.createdBy = Number(options.userId);
+    }
+    
     if (options.search) {
       where.OR = [
         { name: { contains: options.search, mode: 'insensitive' } },
@@ -81,30 +89,8 @@ const WarehouseService = {
           skip,
           take: perPage,
           orderBy: { createdAt: 'desc' },
-          // include locations/racks if present (will be ignored if relation absent by catch fallback)
-          include: { locations: true },
-        }).catch(async (err) => {
-          // Fallback if 'locations' relation doesn't exist
-          // Prisma will throw if include refers to non-existent relation
-          if (err && typeof err.message === 'string' && /relation.*does not exist/i.test(err.message)) {
-            return prisma.warehouse.findMany({
-              where,
-              skip,
-              take: perPage,
-              orderBy: { createdAt: 'desc' },
-            });
-          }
-          throw err;
         }),
       ]);
-
-      // Map to remove heavy nested relations if desired and provide counts
-      const data = warehouses.map((w) => {
-        const { locations, ...rest } = w;
-        let locationCount = null;
-        if (Array.isArray(locations)) locationCount = locations.length;
-        return { ...rest, locationCount };
-      });
 
       return {
         meta: {
@@ -113,7 +99,7 @@ const WarehouseService = {
           total,
           totalPages: Math.ceil(total / perPage),
         },
-        data,
+        data: warehouses,
       };
     } catch (err) {
       logger.error('getAllWarehouses failed', err);
@@ -131,22 +117,9 @@ const WarehouseService = {
     try {
       const warehouse = await prisma.warehouse.findUnique({
         where: { id: Number(id) },
-        include: { locations: true }, // may throw if relation absent
-      }).catch(async (err) => {
-        if (err && typeof err.message === 'string' && /relation.*does not exist/i.test(err.message)) {
-          return prisma.warehouse.findUnique({ where: { id: Number(id) } });
-        }
-        throw err;
       });
 
-      if (!warehouse) return null;
-
-      // compute summary values if locations array present
-      let locationCount = null;
-      if (Array.isArray(warehouse.locations)) locationCount = warehouse.locations.length;
-
-      const { locations, ...rest } = warehouse;
-      return { ...rest, locations: Array.isArray(locations) ? locations : undefined, locationCount };
+      return warehouse;
     } catch (err) {
       logger.error('getWarehouseById failed', err);
       throw new AppError('Failed to fetch warehouse', 500);

@@ -14,8 +14,8 @@ const router = Router();
  * - GET  /api/warehouses       -> list warehouses (protected)
  * - POST /api/warehouses       -> create warehouse (admin/manager)
  */
-router.get('/', authMiddleware, permit('admin', 'manager'), WarehouseController.getAllWarehouses);
-router.post('/', authMiddleware, permit('admin', 'manager'), WarehouseController.createWarehouse);
+router.get('/', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), WarehouseController.getAllWarehouses);
+router.post('/', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), WarehouseController.createWarehouse);
 
 /**
  * Static/detail routes should appear before dynamic parameters if needed.
@@ -29,9 +29,9 @@ router.post('/', authMiddleware, permit('admin', 'manager'), WarehouseController
  * - PUT    /api/warehouses/:id
  * - DELETE /api/warehouses/:id
  */
-router.get('/:id', authMiddleware, permit('admin', 'manager', 'warehouse'), WarehouseController.getWarehouseById);
-router.put('/:id', authMiddleware, permit('admin', 'manager'), WarehouseController.updateWarehouse);
-router.delete('/:id', authMiddleware, permit('admin'), WarehouseController.deleteWarehouse);
+router.get('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), WarehouseController.getWarehouseById);
+router.put('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), WarehouseController.updateWarehouse);
+router.delete('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), WarehouseController.deleteWarehouse);
 
 /**
  * Optional nested routes (locations/racks) can be mounted here if you implement them later:

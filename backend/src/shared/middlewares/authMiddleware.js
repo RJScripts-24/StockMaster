@@ -33,15 +33,16 @@ module.exports = async function authMiddleware(req, res, next) {
       return res.status(401).json({ success: false, message: 'Invalid or expired token' });
     }
 
-    // decoded should contain at least userId
-    if (!decoded || !decoded.userId) {
+    // decoded should contain userId (or sub for JWT standard)
+    const userId = decoded.userId || decoded.sub;
+    if (!decoded || !userId) {
       return res.status(401).json({ success: false, message: 'Invalid token payload' });
     }
 
     // Fetch minimal user info
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, email: true, role: true },
+      where: { id: Number(userId) },
+      select: { id: true, email: true, role: true, name: true },
     });
 
     if (!user) {

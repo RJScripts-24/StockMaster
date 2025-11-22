@@ -172,6 +172,13 @@ async function createUser(payload) {
  */
 const AuthService = {
   /**
+   * Generate token for user (helper for signup)
+   */
+  generateTokenForUser(user) {
+    return generateAccessToken(user);
+  },
+
+  /**
    * Signup: create a new user with hashed password.
    * payload: { name, email, password, role? }
    */

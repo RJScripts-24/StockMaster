@@ -14,8 +14,8 @@ const router = Router();
  * - GET  /api/receipts       -> list receipts (protected)
  * - POST /api/receipts       -> create receipt (warehouse/manager/admin)
  */
-router.get('/', authMiddleware, permit('admin', 'manager', 'warehouse'), ReceiptController.getAllReceipts);
-router.post('/', authMiddleware, permit('admin', 'manager', 'warehouse'), ReceiptController.createReceipt);
+router.get('/', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), ReceiptController.getAllReceipts);
+router.post('/', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), ReceiptController.createReceipt);
 
 /**
  * Action routes that are more specific should come before dynamic :id routes
@@ -23,7 +23,7 @@ router.post('/', authMiddleware, permit('admin', 'manager', 'warehouse'), Receip
  *
  * - POST /api/receipts/:id/validate  -> finalize receipt (increase stock)
  */
-router.post('/:id/validate', authMiddleware, permit('admin', 'manager', 'warehouse'), ReceiptController.validateReceipt);
+router.post('/:id/validate', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), ReceiptController.validateReceipt);
 
 /**
  * Resource routes
@@ -34,8 +34,8 @@ router.post('/:id/validate', authMiddleware, permit('admin', 'manager', 'warehou
  * Note: update/delete are typically restricted to admin/manager or the creator
  * and disallowed if the receipt is already validated (service enforces this).
  */
-router.get('/:id', authMiddleware, permit('admin', 'manager', 'warehouse'), ReceiptController.getReceiptById);
-router.put('/:id', authMiddleware, permit('admin', 'manager'), ReceiptController.updateReceipt);
-router.delete('/:id', authMiddleware, permit('admin', 'manager'), ReceiptController.deleteReceipt);
+router.get('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), ReceiptController.getReceiptById);
+router.put('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), ReceiptController.updateReceipt);
+router.delete('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), ReceiptController.deleteReceipt);
 
 export default router;

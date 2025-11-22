@@ -13,6 +13,11 @@ const WarehouseController = {
   async createWarehouse(req, res, next) {
     try {
       const payload = req.body;
+      
+      // Attach the logged-in user as the creator
+      if (req.user && req.user.id) {
+        payload.createdBy = req.user.id;
+      }
 
       const warehouse = await WarehouseService.createWarehouse(payload);
 
@@ -37,6 +42,11 @@ const WarehouseController = {
         perPage: req.query.perPage,
         search: req.query.search,
       };
+      
+      // Filter by logged-in user's warehouses
+      if (req.user && req.user.id) {
+        filters.userId = req.user.id;
+      }
 
       const result = await WarehouseService.getAllWarehouses(filters);
 

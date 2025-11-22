@@ -14,6 +14,7 @@ model User {
   transfersCreated     Transfer[]  @relation("TransferCreatedBy")
   transfersValidated   Transfer[]  @relation("TransferValidatedBy")
   ledgersCreated      Ledger[]     @relation("LedgerCreatedBy")
+  warehousesCreated   Warehouse[]  @relation("WarehouseCreatedBy")
 }
 // Prisma schema for StockMaster
 
@@ -76,6 +77,7 @@ model Warehouse {
   location    String?
   description String?
   metadata    Json?
+  createdBy   Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   inventory   Inventory[]
@@ -85,6 +87,7 @@ model Warehouse {
     ledgers     Ledger[]
     transfersFrom Transfer[] @relation("TransfersFromWarehouse")
     transfersTo   Transfer[] @relation("TransfersToWarehouse")
+    creator     User?    @relation("WarehouseCreatedBy", fields: [createdBy], references: [id])
 }
 
 model Inventory {
@@ -188,6 +191,7 @@ model TransferItem {
   product    Product  @relation(fields: [productId], references: [id])
 }
 
+model Ledger {
   id           Int      @id @default(autoincrement())
   productId    Int
   warehouseId  Int?
