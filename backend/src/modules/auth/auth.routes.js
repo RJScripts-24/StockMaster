@@ -10,8 +10,10 @@ import {
 	refreshToken,
 	logout,
 	requestPasswordReset,
-	resetPassword
+	resetPassword,
+	getCurrentUser
 } from './auth.controller.js';
+import authMiddleware from '../../shared/middlewares/authMiddleware.js';
 
 const router = Router();
 
@@ -21,8 +23,9 @@ const router = Router();
  * (If you want, I can regenerate your controller with named exports.)
  */
 
-// SIGNUP
+// SIGNUP / REGISTER (both routes point to same handler)
 router.post('/signup', signup);
+router.post('/register', signup);  // Alias for signup
 
 // LOGIN
 router.post('/login', login);
@@ -44,5 +47,8 @@ router.post('/request-password-reset', requestPasswordReset);
 
 // RESET PASSWORD
 router.post('/reset-password', resetPassword);
+
+// GET CURRENT USER (protected route)
+router.get('/me', authMiddleware, getCurrentUser);
 
 export default router;

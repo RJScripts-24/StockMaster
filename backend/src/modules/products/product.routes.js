@@ -14,14 +14,14 @@ const router = Router();
  * - GET  /api/products        -> list products (protected for inventory teams if desired)
  * - POST /api/products        -> create product (admin/manager)
  */
-router.get('/', authMiddleware, permit('admin', 'manager', 'warehouse'), ProductController.getAllProducts);
+router.get('/', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), ProductController.getAllProducts);
 router.post('/', authMiddleware, permit('admin', 'manager'), ProductController.createProduct);
 
 /**
  * Single-resource routes
  * Note: keep static routes (if any) before dynamic :id routes to avoid conflicts.
  */
-router.get('/:id', authMiddleware, permit('admin', 'manager', 'warehouse'), ProductController.getProductById);
+router.get('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), ProductController.getProductById);
 router.put('/:id', authMiddleware, permit('admin', 'manager'), ProductController.updateProduct);
 router.delete('/:id', authMiddleware, permit('admin'), ProductController.deleteProduct);
 
