@@ -2,7 +2,7 @@
 // shared/middlewares/errorHandler.js
 // Central Express error handler middleware
 
-module.exports = function errorHandler(err, req, res, next) {
+export function errorHandler(err, req, res, next) {
   // Default values
   const statusCode = err.statusCode || err.status || 500;
   const isOperational = err.isOperational || false; // set this on known errors if you want
@@ -36,4 +36,4 @@ module.exports = function errorHandler(err, req, res, next) {
 
   // Send JSON response
   res.status(statusCode).json(response);
-};
+}

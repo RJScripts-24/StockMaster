@@ -3,7 +3,7 @@
 // Simple request logging middleware for Express
 // Logs method, URL, status, and response time
 
-module.exports = function requestLogger(req, res, next) {
+export function requestLogger(req, res, next) {
   const start = Date.now();
   const { method, originalUrl } = req;
 
@@ -19,4 +19,4 @@ module.exports = function requestLogger(req, res, next) {
   });
 
   next();
-};
+}
