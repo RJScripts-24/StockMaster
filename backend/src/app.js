@@ -15,10 +15,10 @@ import productRoutes from './modules/products/product.routes.js';
 import warehouseRoutes from './modules/warehouses/warehouse.routes.js';
 import receiptRoutes from './modules/receipts/receipt.routes.js';
 import deliveryRoutes from './modules/deliveries/delivery.routes.js';
-import transferRoutes from './modules/transfers/transfer.routes.js';
-import adjustmentRoutes from './modules/adjustments/adjustment.routes.js';
-import ledgerRoutes from './modules/ledger/ledger.controller.js'; // if using controller as router
-import dashboardRoutes from './modules/dashboard/dashboard.routes.js'; // if exists
+import { registerTransferRoutes } from './modules/transfers/transfer.routes.js';
+import { registerAdjustmentRoutes } from './modules/adjustments/adjustment.routes.js';
+import { registerLedgerRoutes } from './modules/ledger/ledger.routes.js';
+import { registerDashboardRoutes } from './modules/dashboard/dashboard.routes.js';
 
 const app = express();
 
@@ -46,10 +46,12 @@ app.use('/api/products', productRoutes);
 app.use('/api/warehouses', warehouseRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/deliveries', deliveryRoutes);
-app.use('/api/transfers', transferRoutes);
-app.use('/api/adjustments', adjustmentRoutes);
-app.use('/api/ledger', ledgerRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+
+// Register modules that use register*Routes pattern
+registerTransferRoutes(app);
+registerAdjustmentRoutes(app);
+registerLedgerRoutes(app);
+registerDashboardRoutes(app);
 
 // Error handler (must be last)
 app.use(errorHandler);
