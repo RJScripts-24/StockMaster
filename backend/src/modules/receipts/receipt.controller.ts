@@ -1,0 +1,1 @@
+// Receipt controller placeholder
