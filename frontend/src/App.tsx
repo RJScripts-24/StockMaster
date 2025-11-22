@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { authService } from "./services/api";
 import { LoginPage } from "./components/LoginPage";
 import { SignUpPage } from "./components/SignUpPage";
+import { ForgotPasswordPage } from "./components/ForgotPasswordPage";
 import { Dashboard } from "./components/Dashboard";
 import { ReceiptsPage } from "./components/ReceiptsPage";
 import { DeliveryPage } from "./components/DeliveryPage";
@@ -219,7 +220,12 @@ export default function App() {
           />
         );
       case "forgot-password":
-        return <div>Forgot Password Page (to implement)</div>;
+        return (
+          <ForgotPasswordPage
+            onBack={() => navigate("/login")}
+            onSuccess={() => navigate("/login")}
+          />
+        );
       default:
         return <div>404 Not Found</div>;
     }

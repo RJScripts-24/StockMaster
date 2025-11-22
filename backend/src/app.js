@@ -36,8 +36,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 app.use(requestLogger);
 
-// Mount OTP-based auth routes at /auth
-app.use('/auth', otpAuthRouter);
+// Mount OTP-based auth routes at /api/auth
+app.use('/api/auth', otpAuthRouter);
 
 
 // API base route

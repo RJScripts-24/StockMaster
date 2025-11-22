@@ -64,4 +64,28 @@ export const authService = {
       throw error;
     }
   },
+
+  /**
+   * Send password reset OTP
+   * POST /auth/send-reset-otp
+   */
+  async sendResetOtp(email: string): Promise<{ ok: boolean; message: string }> {
+    return await apiClient.post<{ ok: boolean; message: string }>('/auth/send-reset-otp', { email });
+  },
+
+  /**
+   * Verify password reset OTP
+   * POST /auth/verify-reset-otp
+   */
+  async verifyResetOtp(email: string, otp: string): Promise<{ ok: boolean; resetToken: string }> {
+    return await apiClient.post<{ ok: boolean; resetToken: string }>('/auth/verify-reset-otp', { email, otp });
+  },
+
+  /**
+   * Reset password with token
+   * POST /auth/reset-password
+   */
+  async resetPassword(resetToken: string, newPassword: string): Promise<{ ok: boolean; message: string }> {
+    return await apiClient.post<{ ok: boolean; message: string }>('/auth/reset-password', { resetToken, newPassword });
+  },
 };
