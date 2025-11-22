@@ -47,7 +47,7 @@ async function sendEmail({ to, subject, text, html }) {
       text,
       html,
     });
-    // streamTransport returns the message in `info.message` buffer
+    // streamTransport returns the message in `info.message` as a Buffer
     logger.info(`Email sent to ${to} (prototype). preview:\n${info.message || '(no preview)'} `);
     return info;
   } catch (err) {
