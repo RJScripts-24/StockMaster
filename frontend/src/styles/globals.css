@@ -187,3 +187,19 @@
 html {
   font-size: var(--font-size);
 }
+
+/* Video Background Styles */
+body {
+  overflow-x: hidden;
+  background: transparent !important;
+}
+
+#root {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Make page backgrounds transparent to show video */
+.min-h-screen.bg-\[\#2c4b52\] {
+  background: transparent !important;
+}

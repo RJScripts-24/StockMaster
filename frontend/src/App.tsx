@@ -14,6 +14,7 @@ import { MoveHistoryPage } from "./components/MoveHistoryPage";
 import { SettingsPage } from "./components/SettingsPage";
 import { WarehouseSettingsPage } from "./components/WarehouseSettingsPage";
 import { LocationSettingsPage } from "./components/LocationSettingsPage";
+import { VideoBackground } from "./components/VideoBackground";
 import "./styles/globals.css";
 
 export default function App() {
@@ -231,5 +232,12 @@ export default function App() {
     }
   };
 
-  return renderPage();
+  return (
+    <>
+      <VideoBackground />
+      <div className="relative z-10">
+        {renderPage()}
+      </div>
+    </>
+  );
 }
