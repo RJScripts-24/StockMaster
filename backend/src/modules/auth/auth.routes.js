@@ -2,7 +2,16 @@
 // Clean routing layer for Auth Module
 
 import { Router } from 'express';
-import controller from './auth.controller.js';
+import {
+	signup,
+	login,
+	requestOtp,
+	verifyOtp,
+	refreshToken,
+	logout,
+	requestPasswordReset,
+	resetPassword
+} from './auth.controller.js';
 
 const router = Router();
 
@@ -13,27 +22,27 @@ const router = Router();
  */
 
 // SIGNUP
-router.post('/signup', controller.signup);
+router.post('/signup', signup);
 
 // LOGIN
-router.post('/login', controller.login);
+router.post('/login', login);
 
 // REQUEST OTP
-router.post('/request-otp', controller.requestOtp);
+router.post('/request-otp', requestOtp);
 
 // VERIFY OTP
-router.post('/verify-otp', controller.verifyOtp);
+router.post('/verify-otp', verifyOtp);
 
 // REFRESH TOKEN
-router.post('/refresh-token', controller.refreshToken);
+router.post('/refresh-token', refreshToken);
 
 // LOGOUT
-router.post('/logout', controller.logout);
+router.post('/logout', logout);
 
 // REQUEST PASSWORD RESET
-router.post('/request-password-reset', controller.requestPasswordReset);
+router.post('/request-password-reset', requestPasswordReset);
 
 // RESET PASSWORD
-router.post('/reset-password', controller.resetPassword);
+router.post('/reset-password', resetPassword);
 
 export default router;
