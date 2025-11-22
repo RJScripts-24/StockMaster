@@ -14,8 +14,8 @@ const router = Router();
  * - GET  /api/deliveries       -> list deliveries (protected)
  * - POST /api/deliveries       -> create delivery (warehouse/manager/admin)
  */
-router.get('/', authMiddleware, permit('admin', 'manager', 'warehouse'), DeliveryController.getAllDeliveries);
-router.post('/', authMiddleware, permit('admin', 'manager', 'warehouse'), DeliveryController.createDelivery);
+router.get('/', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), DeliveryController.getAllDeliveries);
+router.post('/', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), DeliveryController.createDelivery);
 
 /**
  * Action routes should come before dynamic :id routes to avoid being captured by the :id param.
@@ -24,10 +24,10 @@ router.post('/', authMiddleware, permit('admin', 'manager', 'warehouse'), Delive
  * - POST /api/deliveries/:id/validate -> finalize and decrement stock
  * - POST /api/deliveries/:id/cancel   -> cancel delivery
  */
-router.post('/:id/pick', authMiddleware, permit('admin', 'manager', 'warehouse'), DeliveryController.markAsPicked);
-router.post('/:id/pack', authMiddleware, permit('admin', 'manager', 'warehouse'), DeliveryController.markAsPacked);
-router.post('/:id/validate', authMiddleware, permit('admin', 'manager'), DeliveryController.validateDelivery);
-router.post('/:id/cancel', authMiddleware, permit('admin', 'manager'), DeliveryController.cancelDelivery);
+router.post('/:id/pick', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), DeliveryController.markAsPicked);
+router.post('/:id/pack', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), DeliveryController.markAsPacked);
+router.post('/:id/validate', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), DeliveryController.validateDelivery);
+router.post('/:id/cancel', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), DeliveryController.cancelDelivery);
 
 /**
  * Resource routes
@@ -38,8 +38,8 @@ router.post('/:id/cancel', authMiddleware, permit('admin', 'manager'), DeliveryC
  * Note: update/delete are typically restricted to admin/manager or the creator
  * and disallowed if the delivery is already validated/shipped (service enforces this).
  */
-router.get('/:id', authMiddleware, permit('admin', 'manager', 'warehouse'), DeliveryController.getDeliveryById);
-router.put('/:id', authMiddleware, permit('admin', 'manager'), DeliveryController.updateDelivery);
-router.delete('/:id', authMiddleware, permit('admin', 'manager'), DeliveryController.deleteDelivery);
+router.get('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), DeliveryController.getDeliveryById);
+router.put('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), DeliveryController.updateDelivery);
+router.delete('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), DeliveryController.deleteDelivery);
 
 export default router;

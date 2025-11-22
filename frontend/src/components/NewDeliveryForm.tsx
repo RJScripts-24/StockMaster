@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Trash2, Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Navigation } from "./Navigation";
+import { warehousesService, productsService } from "../services/api";
 
 interface NewDeliveryFormProps {
   onNavigate: (page: string) => void;
@@ -11,32 +12,110 @@ interface NewDeliveryFormProps {
   onCancel: () => void;
 }
 
+interface DeliveryItem {
+  productId: number;
+  quantity: number;
+  productName?: string;
+}
+
 export function NewDeliveryForm({ onNavigate, onSave, onCancel }: NewDeliveryFormProps) {
   const [formData, setFormData] = useState({
-    deliveryAddress: "",
-    scheduleDate: "",
-    responsible: "",
-    operationType: "",
+    customerName: "",
+    referenceNo: "",
+    warehouseId: "",
+    warehouseName: "",
   });
 
-  const [products, setProducts] = useState([
-    { name: "[DESK001] Desk", quantity: 6 }
-  ]);
+  const [items, setItems] = useState<DeliveryItem[]>([{ productId: 0, quantity: 1, productName: "" }]);
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [warehousesResponse, productsResponse] = await Promise.all([
+          warehousesService.getAll(),
+          productsService.getAll()
+        ]);
+        
+        const warehousesData = (warehousesResponse as any).data || warehousesResponse;
+        const productsData = (productsResponse as any).data || productsResponse;
+        
+        setWarehouses(Array.isArray(warehousesData) ? warehousesData : []);
+        setProducts(Array.isArray(productsData) ? productsData : []);
+      } catch (err) {
+        console.error("Failed to load data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const addItem = () => {
+    setItems([...items, { productId: 0, quantity: 1, productName: "" }]);
+  };
+
+  const removeItem = (index: number) => {
+    if (items.length > 1) {
+      setItems(items.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateItem = (index: number, field: keyof DeliveryItem, value: any) => {
+    const newItems = [...items];
+    if (field === 'productName') {
+      newItems[index] = { ...newItems[index], productName: value };
+      const matchedProduct = products.find(p => 
+        `${p.name} - ${p.sku}`.toLowerCase().includes(value.toLowerCase()) ||
+        p.id.toString() === value
+      );
+      if (matchedProduct) {
+        newItems[index].productId = matchedProduct.id;
+      }
+    } else if (field === 'quantity') {
+      newItems[index] = { ...newItems[index], quantity: Number(value) };
+    }
+    setItems(newItems);
+  };
+
+  const handleWarehouseChange = (value: string) => {
+    setFormData({ ...formData, warehouseName: value });
+    const matchedWarehouse = warehouses.find(wh => 
+      `${wh.name} (${wh.code})`.toLowerCase().includes(value.toLowerCase()) ||
+      wh.id.toString() === value
+    );
+    if (matchedWarehouse) {
+      setFormData({ ...formData, warehouseId: matchedWarehouse.id.toString(), warehouseName: value });
+    } else {
+      setFormData({ ...formData, warehouseName: value });
+    }
+  };
 
   const handleValidate = () => {
-    onSave({
-      ...formData,
-      contact: formData.responsible,
-      products: products
-    });
-  };
+    if (!formData.customerName || !formData.warehouseId) {
+      alert("Please fill in customer name and select a warehouse");
+      return;
+    }
 
-  const handleAddProduct = () => {
-    setProducts([...products, { name: "", quantity: 0 }]);
-  };
+    const validItems = items.filter(item => item.productId > 0 && item.quantity > 0);
+    if (validItems.length === 0) {
+      alert("Please add at least one item with a valid product and quantity");
+      return;
+    }
 
-  const handleRemoveProduct = (index: number) => {
-    setProducts(products.filter((_, i) => i !== index));
+    const payload = {
+      customerName: formData.customerName,
+      referenceNo: formData.referenceNo || undefined,
+      warehouseId: Number(formData.warehouseId),
+      items: validItems.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity
+      }))
+    };
+
+    onSave(payload);
   };
 
   return (
@@ -91,113 +170,125 @@ export function NewDeliveryForm({ onNavigate, onSave, onCancel }: NewDeliveryFor
 
         {/* Main Form Container */}
         <div className="bg-[#1e3338] border border-[#3a5a62] rounded-2xl p-8 mb-6">
-          {/* Reference Number */}
-          <h3 className="font-['Arimo',sans-serif] text-red-400 text-2xl mb-6">WH/OUT/0001</h3>
+          {loading ? (
+            <div className="text-white text-center py-8">Loading...</div>
+          ) : (
+            <>
+              {/* Form Grid */}
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                  <Label htmlFor="customerName" className="font-['Arimo',sans-serif] text-red-400 text-base mb-2 block">
+                    Customer Name *
+                  </Label>
+                  <Input
+                    id="customerName"
+                    value={formData.customerName}
+                    onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                    placeholder="Enter customer name"
+                    className="bg-transparent border-0 border-b-2 border-red-400 text-white placeholder:text-[#6b8690] focus:ring-0 focus:border-red-400 h-10 rounded-none font-['Arimo',sans-serif]"
+                  />
+                </div>
 
-          {/* Form Grid */}
-          <div className="grid grid-cols-2 gap-6 mb-6">
-            <div>
-              <Label htmlFor="deliveryAddress" className="font-['Arimo',sans-serif] text-red-400 text-base mb-2 block">
-                Delivery Address
-              </Label>
-              <Input
-                id="deliveryAddress"
-                value={formData.deliveryAddress}
-                onChange={(e) => setFormData({ ...formData, deliveryAddress: e.target.value })}
-                placeholder="Enter delivery address"
-                className="bg-transparent border-0 border-b-2 border-red-400 text-white placeholder:text-[#6b8690] focus:ring-0 focus:border-red-400 h-10 rounded-none font-['Arimo',sans-serif]"
-              />
-            </div>
+                <div>
+                  <Label htmlFor="warehouse" className="font-['Arimo',sans-serif] text-red-400 text-base mb-2 block">
+                    Warehouse *
+                  </Label>
+                  <Input
+                    id="warehouse"
+                    list="warehouse-list"
+                    value={formData.warehouseName}
+                    onChange={(e) => handleWarehouseChange(e.target.value)}
+                    placeholder="Type warehouse name"
+                    className="bg-transparent border-0 border-b-2 border-red-400 text-white placeholder:text-[#6b8690] focus:ring-0 focus:border-red-400 h-10 rounded-none font-['Arimo',sans-serif]"
+                  />
+                  <datalist id="warehouse-list">
+                    {warehouses.map((wh) => (
+                      <option key={wh.id} value={`${wh.name} (${wh.code})`} />
+                    ))}
+                  </datalist>
+                </div>
 
-            <div>
-              <Label htmlFor="scheduleDate" className="font-['Arimo',sans-serif] text-red-400 text-base mb-2 block">
-                Schedule Date
-              </Label>
-              <Input
-                id="scheduleDate"
-                type="date"
-                value={formData.scheduleDate}
-                onChange={(e) => setFormData({ ...formData, scheduleDate: e.target.value })}
-                className="bg-transparent border-0 border-b-2 border-red-400 text-white focus:ring-0 focus:border-red-400 h-10 rounded-none font-['Arimo',sans-serif]"
-              />
-            </div>
+                <div>
+                  <Label htmlFor="referenceNo" className="font-['Arimo',sans-serif] text-red-400 text-base mb-2 block">
+                    Reference Number (Optional)
+                  </Label>
+                  <Input
+                    id="referenceNo"
+                    value={formData.referenceNo}
+                    onChange={(e) => setFormData({ ...formData, referenceNo: e.target.value })}
+                    placeholder="Enter reference number"
+                    className="bg-transparent border-0 border-b-2 border-red-400 text-white placeholder:text-[#6b8690] focus:ring-0 focus:border-red-400 h-10 rounded-none font-['Arimo',sans-serif]"
+                  />
+                </div>
+              </div>
 
-            <div>
-              <Label htmlFor="responsible" className="font-['Arimo',sans-serif] text-red-400 text-base mb-2 block">
-                Responsible
-              </Label>
-              <Input
-                id="responsible"
-                value={formData.responsible}
-                onChange={(e) => setFormData({ ...formData, responsible: e.target.value })}
-                placeholder="Enter responsible person"
-                className="bg-transparent border-0 border-b-2 border-red-400 text-white placeholder:text-[#6b8690] focus:ring-0 focus:border-red-400 h-10 rounded-none font-['Arimo',sans-serif]"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="operationType" className="font-['Arimo',sans-serif] text-red-400 text-base mb-2 block">
-                Operation type
-              </Label>
-              <select
-                id="operationType"
-                value={formData.operationType}
-                onChange={(e) => setFormData({ ...formData, operationType: e.target.value })}
-                className="w-full bg-transparent border-0 border-b-2 border-red-400 text-white focus:ring-0 focus:border-red-400 h-10 rounded-none font-['Arimo',sans-serif]"
-              >
-                <option value="" className="bg-[#2c4b52]">Select type</option>
-                <option value="standard" className="bg-[#2c4b52]">Standard Delivery</option>
-                <option value="express" className="bg-[#2c4b52]">Express Delivery</option>
-                <option value="bulk" className="bg-[#2c4b52]">Bulk Delivery</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Products Section */}
-          <div className="mt-8">
-            <h4 className="font-['Arimo',sans-serif] text-red-400 text-base mb-4">Products</h4>
-            
-            {/* Products Table */}
-            <div className="bg-[#2c4b52] rounded-[10px] overflow-hidden mb-4">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-[#3a5a62]">
-                    <th className="text-left p-4 font-['Arimo',sans-serif] text-[#b4cdd4] text-base font-bold">Product</th>
-                    <th className="text-left p-4 font-['Arimo',sans-serif] text-[#b4cdd4] text-base font-bold">Quantity</th>
-                    <th className="w-16"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((product, index) => (
-                    <tr key={index} className="border-b border-[#3a5a62]">
-                      <td className="p-4 font-['Arimo',sans-serif] text-white text-base">{product.name}</td>
-                      <td className="p-4 font-['Arimo',sans-serif] text-white text-base">{product.quantity}</td>
-                      <td className="p-4">
-                        <button
-                          onClick={() => handleRemoveProduct(index)}
-                          className="text-[#6b8690] hover:text-white transition-colors"
-                        >
-                          <Trash2 className="w-[18px] h-[18px]" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Add New Product Button */}
-            <button
-              onClick={handleAddProduct}
-              className="flex items-center gap-2 font-['Arimo',sans-serif] text-red-400 text-base hover:text-red-300 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16">
-                <path d="M3.33333 8H12.6667" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                <path d="M8 3.33333V12.6667" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-              </svg>
-              Add New product
-            </button>
-          </div>
+              {/* Products Section */}
+              <div className="mt-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-['Arimo',sans-serif] text-red-400 text-base">Products *</h4>
+                  <Button
+                    onClick={addItem}
+                    className="bg-[#00d9a3] hover:bg-[#00c794] text-[#1e3338] h-9 px-4 rounded-lg font-['Arimo',sans-serif] text-sm"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Product
+                  </Button>
+                </div>
+                
+                {/* Products Table */}
+                <div className="bg-[#2c4b52] rounded-[10px] overflow-hidden mb-4">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-[#3a5a62]">
+                        <th className="text-left p-4 font-['Arimo',sans-serif] text-[#b4cdd4] text-base font-bold">Product</th>
+                        <th className="text-left p-4 font-['Arimo',sans-serif] text-[#b4cdd4] text-base font-bold">Quantity</th>
+                        <th className="w-16"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((item, index) => (
+                        <tr key={index} className="border-b border-[#3a5a62]">
+                          <td className="p-4">
+                            <Input
+                              list={`product-list-${index}`}
+                              value={item.productName || ""}
+                              onChange={(e) => updateItem(index, 'productName', e.target.value)}
+                              placeholder="Type product name"
+                              className="bg-transparent border-0 border-b border-[#3a5a62] text-white placeholder:text-[#6b8690] focus:ring-0 focus:border-red-400 h-8 rounded-none font-['Arimo',sans-serif] text-sm"
+                            />
+                            <datalist id={`product-list-${index}`}>
+                              {products.map((prod) => (
+                                <option key={prod.id} value={`${prod.name} - ${prod.sku}`} />
+                              ))}
+                            </datalist>
+                          </td>
+                          <td className="p-4">
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) => updateItem(index, 'quantity', e.target.value)}
+                              className="bg-transparent border-0 border-b border-[#3a5a62] text-white focus:ring-0 focus:border-red-400 h-8 rounded-none font-['Arimo',sans-serif] text-sm w-24"
+                            />
+                          </td>
+                          <td className="p-4">
+                            {items.length > 1 && (
+                              <button
+                                onClick={() => removeItem(index)}
+                                className="text-[#6b8690] hover:text-white transition-colors"
+                              >
+                                <Trash2 className="w-[18px] h-[18px]" />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Status Information */}

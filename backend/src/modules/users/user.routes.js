@@ -14,8 +14,8 @@ const router = Router();
  * - GET    /api/users           -> list users (protected, typically admin/manager)
  * - POST   /api/users           -> create user (protected, admin)
  */
-router.get('/', authMiddleware, permit('admin', 'manager'), UserController.getAllUsers);
-router.post('/', authMiddleware, permit('admin'), UserController.createUser);
+router.get('/', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), UserController.getAllUsers);
+router.post('/', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), UserController.createUser);
 
 /**
  * User resource routes (protected)
@@ -23,9 +23,9 @@ router.post('/', authMiddleware, permit('admin'), UserController.createUser);
  * - PUT    /api/users/:id
  * - DELETE /api/users/:id
  */
-router.get('/:id', authMiddleware, permit('admin', 'manager'), UserController.getUserById);
-router.put('/:id', authMiddleware, permit('admin'), UserController.updateUser);
-router.delete('/:id', authMiddleware, permit('admin'), UserController.deleteUser);
+router.get('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), UserController.getUserById);
+router.put('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), UserController.updateUser);
+router.delete('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), UserController.deleteUser);
 
 /**
  * Profile routes (authenticated user)

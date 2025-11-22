@@ -32,9 +32,11 @@ export interface Product {
   sku: string;
   name: string;
   description?: string;
+  unit?: string;
+  categoryId?: number;
   category?: string;
-  unitPrice: number;
-  reorderPoint?: number;
+  unitPrice?: number; // Optional - may not exist in database
+  reorderPoint?: number; // Optional - may not exist in database
   createdAt: string;
   updatedAt: string;
 }
@@ -43,8 +45,9 @@ export interface CreateProductRequest {
   sku: string;
   name: string;
   description?: string;
-  category?: string;
-  unitPrice: number;
+  unit?: string;
+  categoryId?: number;
+  unitPrice?: number;
   reorderPoint?: number;
 }
 
@@ -52,7 +55,8 @@ export interface UpdateProductRequest {
   sku?: string;
   name?: string;
   description?: string;
-  category?: string;
+  unit?: string;
+  categoryId?: number;
   unitPrice?: number;
   reorderPoint?: number;
 }
@@ -108,71 +112,73 @@ export interface UpdateLocationRequest {
 // Receipt Types
 export interface Receipt {
   id: number;
-  receiptNumber: string;
-  supplierId?: number;
-  receivedDate: string;
-  notes?: string;
-  status: 'PENDING' | 'COMPLETED' | 'CANCELLED';
-  createdById: number;
+  referenceNo?: string;
+  supplierName: string;
+  warehouseId: number;
+  status: 'pending' | 'validated' | 'cancelled';
+  createdById?: number;
+  validatedById?: number;
+  validatedAt?: string;
   createdAt: string;
   updatedAt: string;
   items?: ReceiptItem[];
+  warehouse?: Warehouse;
+  createdBy?: User;
+  validatedBy?: User;
 }
 
 export interface ReceiptItem {
   id: number;
   receiptId: number;
   productId: number;
-  locationId: number;
   quantity: number;
+  unitPrice?: number;
   product?: Product;
-  location?: Location;
 }
 
 export interface CreateReceiptRequest {
-  receiptNumber: string;
-  supplierId?: number;
-  receivedDate: string;
-  notes?: string;
+  supplierName: string;
+  warehouseId: number;
+  referenceNo?: string;
   items: {
     productId: number;
-    locationId: number;
     quantity: number;
+    unitPrice?: number;
   }[];
 }
 
 // Delivery Types
 export interface Delivery {
   id: number;
-  deliveryNumber: string;
-  customerId?: number;
-  deliveryDate: string;
-  notes?: string;
-  status: 'PENDING' | 'COMPLETED' | 'CANCELLED';
-  createdById: number;
+  referenceNo?: string;
+  customerName: string;
+  warehouseId: number;
+  status: 'pending' | 'validated' | 'cancelled';
+  createdById?: number;
+  validatedById?: number;
+  validatedAt?: string;
   createdAt: string;
   updatedAt: string;
   items?: DeliveryItem[];
+  warehouse?: Warehouse;
+  createdBy?: User;
+  validatedBy?: User;
 }
 
 export interface DeliveryItem {
   id: number;
   deliveryId: number;
   productId: number;
-  locationId: number;
   quantity: number;
   product?: Product;
-  location?: Location;
 }
 
 export interface CreateDeliveryRequest {
-  deliveryNumber: string;
-  customerId?: number;
-  deliveryDate: string;
-  notes?: string;
+  customerName: string;
+  warehouseId: number;
+  referenceNo?: string;
   items: {
     productId: number;
-    locationId: number;
     quantity: number;
   }[];
 }
@@ -180,18 +186,19 @@ export interface CreateDeliveryRequest {
 // Transfer Types
 export interface Transfer {
   id: number;
-  transferNumber: string;
-  fromLocationId: number;
-  toLocationId: number;
-  transferDate: string;
-  notes?: string;
-  status: 'PENDING' | 'COMPLETED' | 'CANCELLED';
-  createdById: number;
+  fromWarehouseId: number;
+  toWarehouseId: number;
+  status: 'draft' | 'pending' | 'validated' | 'cancelled';
+  createdById?: number;
+  validatedById?: number;
+  validatedAt?: string;
   createdAt: string;
   updatedAt: string;
   items?: TransferItem[];
-  fromLocation?: Location;
-  toLocation?: Location;
+  fromWarehouse?: Warehouse;
+  toWarehouse?: Warehouse;
+  createdBy?: User;
+  validatedBy?: User;
 }
 
 export interface TransferItem {
@@ -203,11 +210,8 @@ export interface TransferItem {
 }
 
 export interface CreateTransferRequest {
-  transferNumber: string;
-  fromLocationId: number;
-  toLocationId: number;
-  transferDate: string;
-  notes?: string;
+  fromWarehouseId: number;
+  toWarehouseId: number;
   items: {
     productId: number;
     quantity: number;

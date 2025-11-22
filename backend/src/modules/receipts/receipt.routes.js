@@ -35,7 +35,7 @@ router.post('/:id/validate', authMiddleware, permit('admin', 'manager', 'warehou
  * and disallowed if the receipt is already validated (service enforces this).
  */
 router.get('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), ReceiptController.getReceiptById);
-router.put('/:id', authMiddleware, permit('admin', 'manager'), ReceiptController.updateReceipt);
-router.delete('/:id', authMiddleware, permit('admin', 'manager'), ReceiptController.deleteReceipt);
+router.put('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), ReceiptController.updateReceipt);
+router.delete('/:id', authMiddleware, permit('admin', 'manager', 'warehouse', 'user'), ReceiptController.deleteReceipt);
 
 export default router;

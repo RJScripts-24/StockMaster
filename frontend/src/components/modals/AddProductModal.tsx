@@ -28,8 +28,8 @@ export function AddProductModal({ isOpen, onClose, product, onAddProduct }: AddP
         sku: product.sku,
         name: product.name,
         description: product.description || "",
-        category: product.category || "",
-        unitPrice: product.unitPrice.toString(),
+        category: product.category || product.unit || "",
+        unitPrice: product.unitPrice?.toString() || "",
         reorderPoint: product.reorderPoint?.toString() || ""
       });
     } else {
@@ -51,8 +51,8 @@ export function AddProductModal({ isOpen, onClose, product, onAddProduct }: AddP
       sku: formData.sku,
       name: formData.name,
       description: formData.description || undefined,
-      category: formData.category || undefined,
-      unitPrice: parseFloat(formData.unitPrice),
+      unit: formData.category || undefined, // Map category to unit field
+      unitPrice: formData.unitPrice ? parseFloat(formData.unitPrice) : undefined,
       reorderPoint: formData.reorderPoint ? parseInt(formData.reorderPoint) : undefined
     };
     
@@ -123,20 +123,20 @@ export function AddProductModal({ isOpen, onClose, product, onAddProduct }: AddP
 
             <div>
               <Label htmlFor="category" className="font-['Arimo',sans-serif] text-[#00d9a3] text-base mb-2 block">
-                Category
+                Unit / Category
               </Label>
               <Input
                 id="category"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                placeholder="e.g., Furniture"
+                placeholder="e.g., pcs, kg, box"
                 className="bg-[#2c4b52] border-[#3a5a62] text-white placeholder:text-[#6b8690] focus:ring-[#00d9a3] focus:border-[#00d9a3] h-11 rounded-lg font-['Arimo',sans-serif]"
               />
             </div>
 
             <div>
               <Label htmlFor="unitPrice" className="font-['Arimo',sans-serif] text-[#00d9a3] text-base mb-2 block">
-                Unit Price (₹) *
+                Unit Price (₹)
               </Label>
               <Input
                 id="unitPrice"
@@ -147,7 +147,6 @@ export function AddProductModal({ isOpen, onClose, product, onAddProduct }: AddP
                 onChange={(e) => setFormData({ ...formData, unitPrice: e.target.value })}
                 placeholder="e.g., 3000"
                 className="bg-[#2c4b52] border-[#3a5a62] text-white placeholder:text-[#6b8690] focus:ring-[#00d9a3] focus:border-[#00d9a3] h-11 rounded-lg font-['Arimo',sans-serif]"
-                required
               />
             </div>
 

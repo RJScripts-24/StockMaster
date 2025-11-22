@@ -49,9 +49,7 @@ export function ProductsPage({ onNavigate }: ProductsPageProps) {
           sku: productData.sku,
           name: productData.name,
           description: productData.description,
-          category: productData.category,
-          unitPrice: productData.unitPrice,
-          reorderPoint: productData.reorderPoint
+          unit: productData.unit
         });
         setProducts(products.map(p => p.id === editingProduct.id ? updated : p));
       } else {
@@ -59,14 +57,13 @@ export function ProductsPage({ onNavigate }: ProductsPageProps) {
           sku: productData.sku,
           name: productData.name,
           description: productData.description,
-          category: productData.category,
-          unitPrice: productData.unitPrice,
-          reorderPoint: productData.reorderPoint
+          unit: productData.unit
         });
         setProducts([...products, newProduct]);
       }
       setShowAddProductModal(false);
       setEditingProduct(null);
+      await fetchProducts(); // Refresh to get latest data
     } catch (err: any) {
       alert(err.message || 'Failed to save product');
       console.error('Error saving product:', err);
@@ -187,8 +184,8 @@ export function ProductsPage({ onNavigate }: ProductsPageProps) {
                 >
                   <td className="p-5 font-['Arimo',sans-serif] text-[#00d9a3] text-base">{product.sku}</td>
                   <td className="p-5 font-['Arimo',sans-serif] text-white text-base">{product.name}</td>
-                  <td className="p-5 font-['Arimo',sans-serif] text-white text-base">{product.category || '-'}</td>
-                  <td className="p-5 font-['Arimo',sans-serif] text-white text-base">₹{product.unitPrice.toFixed(2)}</td>
+                  <td className="p-5 font-['Arimo',sans-serif] text-white text-base">{product.category || product.unit || '-'}</td>
+                  <td className="p-5 font-['Arimo',sans-serif] text-white text-base">₹{product.unitPrice ? product.unitPrice.toFixed(2) : '0.00'}</td>
                   <td className="p-5 font-['Arimo',sans-serif] text-white text-base">{product.reorderPoint || '-'}</td>
                   <td className="p-5">
                     <button 

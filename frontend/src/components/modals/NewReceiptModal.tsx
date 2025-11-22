@@ -109,7 +109,10 @@ export function NewReceiptModal({ onClose, onSave }: NewReceiptModalProps) {
       supplierName: formData.supplierName,
       referenceNo: formData.referenceNo || undefined,
       warehouseId: Number(formData.warehouseId),
-      items: validItems
+      items: validItems.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity
+      }))
     };
 
     onSave(payload);

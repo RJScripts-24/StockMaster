@@ -38,12 +38,16 @@ export function ReceiptsPage({ onNavigate }: ReceiptsPageProps) {
 
   const handleSaveReceipt = async (data: any) => {
     try {
-      await receiptsService.create(data);
+      console.log('Creating receipt with data:', data);
+      const response = await receiptsService.create(data);
+      console.log('Receipt created successfully:', response);
       await fetchReceipts(); // Refresh the list
       setShowNewReceiptModal(false);
+      alert('Receipt created successfully!');
     } catch (err: any) {
       console.error("Failed to create receipt:", err);
-      alert("Failed to create receipt. Please try again.");
+      const errorMessage = err.message || "Failed to create receipt. Please try again.";
+      alert(errorMessage);
     }
   };
 

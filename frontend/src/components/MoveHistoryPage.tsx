@@ -57,16 +57,16 @@ export function MoveHistoryPage({ onNavigate }: MoveHistoryPageProps) {
         receipt.items?.forEach(item => {
           allMovements.push({
             id: `receipt-${receipt.id}-${item.id}`,
-            reference: receipt.receiptNumber || `RCP-${receipt.id}`,
+            reference: receipt.referenceNo || `RCP-${receipt.id}`,
             type: "receipt",
-            date: new Date(receipt.receivedDate).toLocaleDateString(),
-            contact: `Supplier ${receipt.supplierId || 'N/A'}`,
+            date: new Date(receipt.createdAt).toLocaleDateString(),
+            contact: receipt.supplierName,
             from: "Supplier",
-            to: item.location?.name || `Location ${item.locationId}`,
+            to: receipt.warehouse?.name || `Warehouse ${receipt.warehouseId}`,
             product: item.product?.name || `Product ${item.productId}`,
             quantity: item.quantity,
             status: receipt.status,
-            statusColor: receipt.status === 'COMPLETED' ? 'text-[#00d9a3]' : receipt.status === 'PENDING' ? 'text-orange-500' : 'text-[#ff6b6b]'
+            statusColor: receipt.status === 'validated' ? 'text-[#00d9a3]' : receipt.status === 'pending' ? 'text-orange-500' : 'text-[#ff6b6b]'
           });
         });
       });
@@ -76,16 +76,16 @@ export function MoveHistoryPage({ onNavigate }: MoveHistoryPageProps) {
         delivery.items?.forEach(item => {
           allMovements.push({
             id: `delivery-${delivery.id}-${item.id}`,
-            reference: delivery.deliveryNumber || `DEL-${delivery.id}`,
+            reference: delivery.referenceNo || `DEL-${delivery.id}`,
             type: "delivery",
-            date: new Date(delivery.deliveryDate).toLocaleDateString(),
-            contact: `Customer ${delivery.customerId || 'N/A'}`,
-            from: item.location?.name || `Location ${item.locationId}`,
+            date: new Date(delivery.createdAt).toLocaleDateString(),
+            contact: delivery.customerName,
+            from: delivery.warehouse?.name || `Warehouse ${delivery.warehouseId}`,
             to: "Customer",
             product: item.product?.name || `Product ${item.productId}`,
             quantity: item.quantity,
             status: delivery.status,
-            statusColor: delivery.status === 'COMPLETED' ? 'text-[#00d9a3]' : delivery.status === 'PENDING' ? 'text-orange-500' : 'text-[#ff6b6b]'
+            statusColor: delivery.status === 'validated' ? 'text-[#00d9a3]' : delivery.status === 'pending' ? 'text-orange-500' : 'text-[#ff6b6b]'
           });
         });
       });
@@ -95,16 +95,16 @@ export function MoveHistoryPage({ onNavigate }: MoveHistoryPageProps) {
         transfer.items?.forEach(item => {
           allMovements.push({
             id: `transfer-${transfer.id}-${item.id}`,
-            reference: transfer.transferNumber || `TRF-${transfer.id}`,
+            reference: `TRF-${transfer.id}`,
             type: "transfer",
-            date: new Date(transfer.transferDate).toLocaleDateString(),
+            date: new Date(transfer.createdAt).toLocaleDateString(),
             contact: "Internal Transfer",
-            from: transfer.fromLocation?.name || `Location ${transfer.fromLocationId}`,
-            to: transfer.toLocation?.name || `Location ${transfer.toLocationId}`,
+            from: transfer.fromWarehouse?.name || `Warehouse ${transfer.fromWarehouseId}`,
+            to: transfer.toWarehouse?.name || `Warehouse ${transfer.toWarehouseId}`,
             product: item.product?.name || `Product ${item.productId}`,
             quantity: item.quantity,
             status: transfer.status,
-            statusColor: transfer.status === 'COMPLETED' ? 'text-[#00d9a3]' : transfer.status === 'PENDING' ? 'text-orange-500' : 'text-[#ff6b6b]'
+            statusColor: transfer.status === 'validated' ? 'text-[#00d9a3]' : transfer.status === 'pending' ? 'text-orange-500' : 'text-[#ff6b6b]'
           });
         });
       });
