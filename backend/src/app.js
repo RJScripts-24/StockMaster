@@ -1,6 +1,7 @@
 // src/app.js
 // Express application setup (JavaScript version)
 
+
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -20,6 +21,10 @@ import { registerAdjustmentRoutes } from './modules/adjustments/adjustment.route
 import { registerLedgerRoutes } from './modules/ledger/ledger.routes.js';
 import { registerDashboardRoutes } from './modules/dashboard/dashboard.routes.js';
 
+// OTP Auth router (new)
+import otpAuthRouter from './routes/auth.js';
+
+
 const app = express();
 
 // Core middlewares
@@ -30,6 +35,10 @@ app.use(express.urlencoded({ extended: true }));
 // Logging
 app.use(morgan('dev'));
 app.use(requestLogger);
+
+// Mount OTP-based auth routes at /auth
+app.use('/auth', otpAuthRouter);
+
 
 // API base route
 app.get('/', (req, res) => {
