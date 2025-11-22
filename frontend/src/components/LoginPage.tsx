@@ -48,7 +48,7 @@ export function LoginPage({ onSignUp, onLogin, onForgotPassword }: LoginPageProp
             <div className="bg-[#00d9a3] rounded-lg size-10 flex items-center justify-center">
               <img src={logo} alt="Logo" className="w-30 h-30 object-contain filter brightness-0" />
             </div>
-            <h1 className="font-['Arimo',sans-serif] text-white text-2xl tracking-wider">Stalk Master</h1>
+            <h1 className="font-['Arimo',sans-serif] text-white text-2xl tracking-wider">StockMaster</h1>
           </div>
 
           {/* Title */}

@@ -23,7 +23,7 @@ function Heading() {
   return (
     <div className="basis-0 grow h-[32px] min-h-px min-w-px relative shrink-0" data-name="Heading 1">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-[32px] items-start relative w-full">
-        <p className="font-['Arimo:Regular',sans-serif] font-normal leading-[32px] relative shrink-0 text-[24px] text-nowrap text-white tracking-[1.2px] whitespace-pre">Stalk Master</p>
+        <p className="font-['Arimo:Regular',sans-serif] font-normal leading-[32px] relative shrink-0 text-[24px] text-nowrap text-white tracking-[1.2px] whitespace-pre">StockMaster</p>
       </div>
     </div>
   );

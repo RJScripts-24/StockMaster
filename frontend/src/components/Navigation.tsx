@@ -1,4 +1,4 @@
-import logo from "figma:asset/4ca9b3623e2c0ac1d98ff64875d9b426ddff926e.png";
+import { Truck } from "lucide-react";
 
 interface NavigationProps {
   activeMenu: string;
@@ -24,9 +24,9 @@ export function Navigation({ activeMenu, onNavigate }: NavigationProps) {
           className="flex items-center gap-3"
         >
           <div className="bg-[#00d9a3] rounded-lg size-11 flex items-center justify-center">
-            <img src={logo} alt="Logo" className="w-7 h-7 object-contain filter brightness-0" />
+            <Truck className="w-6 h-6 text-[#1e3338]" strokeWidth={2.5} />
           </div>
-          <h1 className="font-['Arimo',sans-serif] text-white text-lg tracking-wider">Stalk Master</h1>
+          <h1 className="font-['Arimo',sans-serif] text-white text-lg tracking-wider">StockMaster</h1>
         </button>
 
         {/* Navigation Links */}
@@ -47,11 +47,6 @@ export function Navigation({ activeMenu, onNavigate }: NavigationProps) {
               )}
             </button>
           ))}
-        </div>
-
-        {/* User Avatar */}
-        <div className="bg-[#00d9a3] rounded-lg size-9 flex items-center justify-center">
-          <span className="font-['Arimo',sans-serif] text-[#1e3338] text-sm">A</span>
         </div>
       </div>
     </div>
