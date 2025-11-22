@@ -7,3 +7,35 @@ dist/
 coverage/
 .prisma/
 .DS_Store
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build output
+build/
+tmp/
+temp/
+
+# Prisma
+prisma/migrations/
+prisma/sql/
+
+# Test output
+coverage/
+src/tests/integration/
+src/tests/unit/
